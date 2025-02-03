@@ -39,13 +39,24 @@ public class MainUsuario2 {
 
         DatagramPacket recibo = new DatagramPacket(recibidos, recibidos.length);
 
-
+        System.out.println("esperando datagrama");
         try {
             clientSocket.receive(recibo);
         } catch (IOException e) {
 
             e.printStackTrace();
         }
+        String confirmacionConexion = new String(recibo.getData()).trim();
+        if(confirmacionConexion.equals("Chat general abierto")){
+            System.out.println(confirmacionConexion);
+            while(true){
+
+            }
+        }else{
+            System.out.println("No hay suficientes usuarios para chat general");
+        }
+
+        System.out.println("Vuelve a intentarlo con otro nombre de usuario");
 
         clientSocket.close();
 

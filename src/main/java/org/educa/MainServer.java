@@ -8,6 +8,8 @@ import java.net.SocketException;
 import java.util.ArrayList;
 
 public class MainServer {
+    private static ArrayList<String> usuariosConectados = new ArrayList<String>();
+    private static ArrayList<DatagramPacket> direcciones = new ArrayList<DatagramPacket>();
     public static void main(String[] args) {
         DatagramSocket socket = null;
         try {
@@ -17,8 +19,7 @@ public class MainServer {
             e1.printStackTrace();
         }
         boolean desconexion = true;
-        ArrayList<String> usuariosConectados = new ArrayList<String>();
-        ArrayList<String> direcciones = new ArrayList<String>();
+
         while (desconexion){
             if (usuariosConectados.isEmpty()){
                 System.out.println("Servidor esperando conexiones");
@@ -35,18 +36,31 @@ public class MainServer {
                 e.printStackTrace();
             }
             String nombreUsuario = new String(recibo.getData()).trim();
-            System.out.println(comprobarNombreUsuario(nombreUsuario, usuariosConectados, recibo));
+            System.out.println(comprobarNombreUsuario(nombreUsuario, recibo));
             if(usuariosConectados.size()>=2){
                 System.out.println("Chat general iniciado");
+                byte[] chatAbierto = new byte[1024];
+                chatAbierto = "Chat general abierto".getBytes();
+                for (int i = 0; i < usuariosConectados.size(); i++) {
+                    DatagramPacket envio = new DatagramPacket(chatAbierto, chatAbierto.length, direcciones.get(i).getAddress(), direcciones.get(i).getPort());
+                    try {
+                        socket.send(envio);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+
                 while(usuariosConectados.size()>=2){
 
-                }
-            }
 
+                }
+            }else{
+                System.out.println("No hay usuarios suficientes para escribir por el chat general");
+            }
         }
     }
-    public static String comprobarNombreUsuario(String usuario, ArrayList<String> usuarios, DatagramPacket datagramPacket){
-        if (usuarios.contains(usuario)){
+    public static String comprobarNombreUsuario(String usuario, DatagramPacket datagramPacket){
+        if (usuariosConectados.contains(usuario)){
             byte[] enviados = new byte[1024];
             enviados = "Usuario ya conectado".getBytes();
             DatagramPacket envio = new DatagramPacket(enviados, enviados.length, datagramPacket.getAddress(), datagramPacket.getPort());
@@ -59,7 +73,8 @@ public class MainServer {
             return "Usuario ya conectado";
         }
         else{
-            usuarios.add(usuario);
+            usuariosConectados.add(usuario);
+            direcciones.add(datagramPacket);
             return "Usuario conectado";
         }
     }

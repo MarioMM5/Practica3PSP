@@ -53,10 +53,10 @@ public class MainUsuario1 {
                 System.out.print("Escribe lo que quieras");
                 byte[] mensajeSaliente = new byte[1024];
                 mensajeSaliente = nombreUsuario.getBytes();
-                DatagramPacket paqueteSaliente = new DatagramPacket(enviados, enviados.length, IPservidor, puerto);
+                DatagramPacket paqueteSaliente = new DatagramPacket(mensajeSaliente, mensajeSaliente.length, IPservidor, puerto);
                 //TODO: Terminar el chat general de los usuarios
                 try {
-                    clientSocket.send(envio);
+                    clientSocket.send(paqueteSaliente);
                 } catch (IOException e) {
                     e.printStackTrace();
                 }

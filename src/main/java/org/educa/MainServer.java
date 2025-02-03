@@ -51,7 +51,24 @@ public class MainServer {
                 }
 
                 while(usuariosConectados.size()>=2){
-
+                    byte[] mensajeRecibido = new byte[1024];
+                    DatagramPacket mensaje = new DatagramPacket(mensajeRecibido, mensajeRecibido.length);
+                    try {
+                        socket.receive(mensaje);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                    String mensajeRecibidoString = new String(mensaje.getData()).trim();
+                    for (int i = 0; i < usuariosConectados.size(); i++) {
+                        String mensajeAEnviar = nombreUsuario + ": " + mensajeRecibidoString;
+                        byte[] mensajeReenviar = new byte[1024];
+                        DatagramPacket envio = new DatagramPacket(mensajeReenviar, mensajeReenviar.length, direcciones.get(i).getAddress(), direcciones.get(i).getPort());
+                        try {
+                            socket.send(envio);
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    }
 
                 }
             }else{

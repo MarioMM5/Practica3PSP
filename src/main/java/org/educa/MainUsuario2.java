@@ -50,7 +50,16 @@ public class MainUsuario2 {
         if(confirmacionConexion.equals("Chat general abierto")){
             System.out.println(confirmacionConexion);
             while(true){
-
+                System.out.print("Escribe lo que quieras");
+                byte[] mensajeSaliente = new byte[1024];
+                mensajeSaliente = nombreUsuario.getBytes();
+                DatagramPacket paqueteSaliente = new DatagramPacket(mensajeSaliente, mensajeSaliente.length, IPservidor, puerto);
+                //TODO: Terminar el chat general de los usuarios
+                try {
+                    clientSocket.send(paqueteSaliente);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
         }else{
             System.out.println("No hay suficientes usuarios para chat general");

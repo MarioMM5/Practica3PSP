@@ -1,6 +1,7 @@
 package org.educa.entity;
 
 import java.net.DatagramPacket;
+import java.net.DatagramSocket;
 
 
 public class UsuarioEntity {
@@ -11,6 +12,9 @@ public class UsuarioEntity {
     public UsuarioEntity(String nombreUsuario, DatagramPacket datagramPacket) {
         this.nombreUsuario = nombreUsuario;
         this.datagramPacket = datagramPacket;
+    }
+
+    public UsuarioEntity(DatagramSocket clientSocket) {
     }
 
     public String getNombreUsuario() {

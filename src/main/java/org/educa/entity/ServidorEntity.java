@@ -6,6 +6,7 @@ public class ServidorEntity {
 
     private DatagramSocket datagramSocket;
     private byte[] buffer = new byte[1024];
+    private String chatGeneral="";
 
     public ServidorEntity(DatagramSocket datagramSocket) {
         this.datagramSocket = datagramSocket;
@@ -24,6 +25,14 @@ public class ServidorEntity {
 
     public void setDatagramSocket(DatagramSocket datagramSocket) {
         this.datagramSocket = datagramSocket;
+    }
+
+    public String getChatGeneral() {
+        return chatGeneral;
+    }
+
+    public void setChatGeneral(String chatGeneral) {
+        this.chatGeneral = chatGeneral;
     }
 
     public byte[] getBuffer() {

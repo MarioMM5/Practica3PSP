@@ -1,17 +1,23 @@
 package org.educa;
 
+import org.educa.entity.UsuarioEntity;
+
+import javax.swing.*;
 import java.io.IOException;
 import java.net.*;
 import java.util.Scanner;
 
 import static java.lang.System.exit;
 
-public class MainUsuario {
 
+public class MainUsuario {
+    private static LogueoUsuario logueoUsuario;
+    private static UsuarioEntity usuario;
     public static void main(String[] args) {
         Scanner sc = new Scanner(System.in);
         InetAddress ipServidor = null;
         DatagramSocket clientSocket = null;
+        usuario = new UsuarioEntity(clientSocket);
         try {
             ipServidor = InetAddress.getLocalHost();
             clientSocket = new DatagramSocket();
@@ -20,57 +26,70 @@ public class MainUsuario {
         } catch (UnknownHostException e) {
             throw new RuntimeException(e);
         }
-        System.out.println(menuUsuarioNoLoggeado());
-        int opcion = sc.nextInt();
-        if(opcion == 1) {
-            System.out.print("Escribe tu nombre de usuario:");
-            String nombreUsuario = sc.nextLine();
-            mandarMensajeAlServidor(nombreUsuario, ipServidor, clientSocket);
-            String confirmacion = recibirMensajeDelServidor(clientSocket);
-            System.out.println(confirmacion);
-            if(confirmacion.equals("Bienvenido a la aplicación")){
-                System.out.println(menuUsuarioLoggeado());
-                int opcionUsuarioLoggeado = sc.nextInt();
-                if(opcionUsuarioLoggeado == 1){
-                    System.out.println("Leyendo mensajes...");
-                } else if(opcionUsuarioLoggeado == 2){
-                    System.out.println("Escribe el mensaje que quieres enviar");
-                    String mensaje = sc.nextLine();
-                    mandarMensajeAlServidor(mensaje, ipServidor, clientSocket);
-                } else if(opcionUsuarioLoggeado == 0){
-                    System.out.println("Saliendo...");
-                    exit(0);
-                }
-            }else{
-                System.out.println("El nombre de usuario ya está en uso");
-                exit(0);
+        logueoUsuario = new LogueoUsuario(clientSocket);
+        logueoUsuario.setContentPane(logueoUsuario.getPanelLogueo());
+        logueoUsuario.setTitle("Logueo de usuario");
+        logueoUsuario.setSize(400, 200);
+        logueoUsuario.setVisible(true);
+        logueoUsuario.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        String nombreUsuario = logueoUsuario.getTextFieldNombreUsuario().getText();
+        while (logueoUsuario.isActive()){
+            try {
+                usuario.setNombreUsuario(logueoUsuario.getTextFieldNombreUsuario().getText());
+                System.out.println("Nombre de usuario: " + usuario.getNombreUsuario());
+                Thread.sleep(5000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
             }
-        } else if (opcion == 0) {
-            System.out.println("Saliendo...");
+        }
+        recibirConfirmacionServidor(clientSocket);
+        System.out.println("Bienvenido " + usuario.getNombreUsuario());
+        //TODO: Abrir chat de usuario
+        ChatUsuario chat = new ChatUsuario(nombreUsuario, clientSocket);
+        chat.setContentPane(chat.getPanelChat());
+        chat.setTitle("Chat de usuario");
+        chat.setSize(600,500);
+        chat.setVisible(true);
+        chat.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        chat.getChat().setText("Bienvenido " + usuario.getNombreUsuario() + "\n");
+
+        //DE ESTO SE ENCARGA EL CHAT USUARIO .JAVA
+        //TODO: Si pulsa el boton de enviar mensaje, enviarlo al servidor
+    }
+
+    private static String recibirMensajeAlChat(DatagramSocket clientSocket) {
+        String mensajeServidor = recibirMensajeDelServidor(clientSocket);
+        if (mensajeServidor.split(":")[0].equals("2")){
+            String mensajeDepurado = mensajeServidor.split(":")[1] + " : " + mensajeServidor.split(":")[2];
+            return mensajeDepurado;
+        }
+        return "";
+    }
+
+    private static void recibirConfirmacionServidor(DatagramSocket clientSocket) {
+        String confirmacionConexion = recibirMensajeDelServidor(clientSocket);
+        if (confirmacionConexion.split(":")[0].equals("1")){
+            System.out.println("Conexion realizada con exito");
+            usuario.setNombreUsuario(confirmacionConexion.split(":")[2]);
+        }else{
+            System.out.println("Error en la conexion");
             exit(0);
         }
-
     }
 
     private static String recibirMensajeDelServidor(DatagramSocket clientSocket) {
         byte[] recibidos = new byte[1024];
         DatagramPacket recibo = new DatagramPacket(recibidos, recibidos.length);
-        System.out.println("esperando datagrama");
         try {
             clientSocket.receive(recibo);
         } catch (IOException e) {
             e.printStackTrace();
         }
-        String confirmacionConexion = new String(recibo.getData()).trim();
-        return confirmacionConexion;
+        String mensajeServidor= new String(recibo.getData()).trim();
+        System.out.println("Mensaje recibido: " + mensajeServidor);
+        return mensajeServidor ;
     }
 
-    public static String menuUsuarioLoggeado(){
-        return "1. Leer mensajes\n2. Enviar mensajes\n0. Salir";
-    }
-    public static String menuUsuarioNoLoggeado(){
-        return "1. Conectar\n0. Salir";
-    }
     public static void mandarMensajeAlServidor(String mensaje, InetAddress ipServidor, DatagramSocket datosCliente){
         byte[] envioString = new byte[1024];
         envioString = mensaje.getBytes();
@@ -82,6 +101,10 @@ public class MainUsuario {
         }
     }
 
+    public static void cerrarVentanaLogueo() {
+        logueoUsuario.setVisible(false);
+
+    }
 }
 
 

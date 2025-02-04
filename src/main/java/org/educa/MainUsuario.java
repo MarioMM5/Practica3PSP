@@ -12,7 +12,9 @@ import static java.lang.System.exit;
 
 public class MainUsuario {
     private static LogueoUsuario logueoUsuario;
+    private static ChatUsuario chat;
     private static UsuarioEntity usuario;
+    private static String historialChat;
     public static void main(String[] args) {
         Scanner sc = new Scanner(System.in);
         InetAddress ipServidor = null;
@@ -26,35 +28,37 @@ public class MainUsuario {
         } catch (UnknownHostException e) {
             throw new RuntimeException(e);
         }
+
         logueoUsuario = new LogueoUsuario(clientSocket);
         logueoUsuario.setContentPane(logueoUsuario.getPanelLogueo());
         logueoUsuario.setTitle("Logueo de usuario");
         logueoUsuario.setSize(400, 200);
         logueoUsuario.setVisible(true);
         logueoUsuario.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        String nombreUsuario = logueoUsuario.getTextFieldNombreUsuario().getText();
         while (logueoUsuario.isActive()){
             try {
-                usuario.setNombreUsuario(logueoUsuario.getTextFieldNombreUsuario().getText());
-                System.out.println("Nombre de usuario: " + usuario.getNombreUsuario());
                 Thread.sleep(5000);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
         }
-        recibirConfirmacionServidor(clientSocket);
+        logueoUsuario.dispose();
         System.out.println("Bienvenido " + usuario.getNombreUsuario());
         //TODO: Abrir chat de usuario
-        ChatUsuario chat = new ChatUsuario(nombreUsuario, clientSocket);
+        chat = new ChatUsuario(clientSocket, usuario.getNombreUsuario());
         chat.setContentPane(chat.getPanelChat());
         chat.setTitle("Chat de usuario");
-        chat.setSize(600,500);
+        chat.setSize(400, 200);
         chat.setVisible(true);
         chat.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        chat.getChat().setText("Bienvenido " + usuario.getNombreUsuario() + "\n");
-
-        //DE ESTO SE ENCARGA EL CHAT USUARIO .JAVA
-        //TODO: Si pulsa el boton de enviar mensaje, enviarlo al servidor
+        chat.getTextPane1().setText(historialChat);
+        chat.getTextPane1().setText(chat.getTextPane1().getText() + "\n");
+        while(true){
+            String mensaje = recibirMensajeAlChat(clientSocket);
+            if (!mensaje.isEmpty()){
+                chat.getTextPane1().setText(chat.getTextPane1().getText() + mensaje + "\n");
+            }
+        }
     }
 
     private static String recibirMensajeAlChat(DatagramSocket clientSocket) {
@@ -66,17 +70,6 @@ public class MainUsuario {
         return "";
     }
 
-    private static void recibirConfirmacionServidor(DatagramSocket clientSocket) {
-        String confirmacionConexion = recibirMensajeDelServidor(clientSocket);
-        if (confirmacionConexion.split(":")[0].equals("1")){
-            System.out.println("Conexion realizada con exito");
-            usuario.setNombreUsuario(confirmacionConexion.split(":")[2]);
-        }else{
-            System.out.println("Error en la conexion");
-            exit(0);
-        }
-    }
-
     private static String recibirMensajeDelServidor(DatagramSocket clientSocket) {
         byte[] recibidos = new byte[1024];
         DatagramPacket recibo = new DatagramPacket(recibidos, recibidos.length);
@@ -85,8 +78,7 @@ public class MainUsuario {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        String mensajeServidor= new String(recibo.getData()).trim();
-        System.out.println("Mensaje recibido: " + mensajeServidor);
+        String mensajeServidor = new String(recibo.getData()).trim();
         return mensajeServidor ;
     }
 
@@ -101,9 +93,12 @@ public class MainUsuario {
         }
     }
 
-    public static void cerrarVentanaLogueo() {
-        logueoUsuario.setVisible(false);
+    public static void setNombreUsuario(String nombreUsuario) {
+        usuario.setNombreUsuario(nombreUsuario);
+    }
 
+    public static void setChat(String chat) {
+        historialChat = chat;
     }
 }
 

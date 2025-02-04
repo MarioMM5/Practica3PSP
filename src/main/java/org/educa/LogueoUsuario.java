@@ -1,5 +1,6 @@
 package org.educa;
 
+import com.sun.tools.javac.Main;
 import lombok.Data;
 
 import javax.swing.*;
@@ -26,6 +27,11 @@ public class LogueoUsuario extends JFrame{
             @Override
             public void actionPerformed(ActionEvent e) {
                 String nombreUsuario = textFieldNombreUsuario.getText();
+                try{
+                    Thread.sleep(3000);
+                } catch (InterruptedException ex) {
+                    throw new RuntimeException(ex);
+                }
                 if (nombreUsuario.isEmpty()){
                     JOptionPane.showMessageDialog(null, "El nombre de usuario no puede estar vacío");
                 } else {
@@ -49,10 +55,12 @@ public class LogueoUsuario extends JFrame{
                         throw new RuntimeException(ex);
                     }
                     String confirmacionConexion = new String(recibo.getData()).trim();
+                    System.out.println(confirmacionConexion);
                     if (confirmacionConexion.split(":")[0].equals("1")){
                         JOptionPane.showMessageDialog(null, "Bienvenido " + nombreUsuario);
-                        MainUsuario.cerrarVentanaLogueo();
-                        setVisible(false);
+                        MainUsuario.setNombreUsuario(confirmacionConexion.split(":")[2]);
+                        MainUsuario.setChat(confirmacionConexion.split(":")[3]);
+                        dispose();
                     } else {
                         JOptionPane.showMessageDialog(null, "El nombre de usuario ya está en uso");
                         exit(0);

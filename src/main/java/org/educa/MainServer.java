@@ -22,14 +22,12 @@ public class MainServer {
             e1.printStackTrace();
         }
         servidorEntity = new ServidorEntity(socket);
+        servidorEntity.setChatGeneral("Bienvenido al chat general \n");
 
         while(true){
-            recibirPaquete(servidorEntity.getDatagramSocket());
+                recibirPaquete(servidorEntity.getDatagramSocket());
+            }
         }
-
-
-        }
-
 
     private static void recibirPaquete(DatagramSocket socket) {
         byte[] buffer = new byte[1024];
@@ -50,9 +48,10 @@ public class MainServer {
     }
 
     private static void recibirMensaje(String mensaje, DatagramPacket recibo) {
+        servidorEntity.setChatGeneral(servidorEntity.getChatGeneral() + mensaje.split(":")[1] + " : " + mensaje.split(":")[2] + "\n");
+        System.out.println(servidorEntity.getChatGeneral());
         String nombreUsuario = mensaje.split(":")[1];
         String mensajeUsuario = mensaje.split(":")[2];
-        servidorEntity.setChatGeneral(servidorEntity.getChatGeneral() + nombreUsuario + " : " + mensajeUsuario + "\n");
         for (DatagramPacket direccion : direcciones){
             broadcastMensaje(nombreUsuario, mensajeUsuario, direccion);
         }
@@ -60,7 +59,7 @@ public class MainServer {
     }
 
     private static void broadcastMensaje(String nombreUsuario, String mensajeUsuario, DatagramPacket direccion) {
-        String mensaje = "2:" + nombreUsuario + " : " + mensajeUsuario;
+        String mensaje = "2:" + nombreUsuario + ":" + mensajeUsuario;
         byte[] enviados = mensaje.getBytes();
         DatagramPacket envio = new DatagramPacket(enviados, enviados.length, direccion.getAddress(), direccion.getPort());
         try{
@@ -81,10 +80,9 @@ public class MainServer {
             } catch (IOException e) {
                 e.printStackTrace();
             }
-        }
-        else{
-            String confirmacion = "1:Nombre valido:"+usuario;
-            System.out.println(confirmacion);
+        }else{
+            String confirmacion = "1:Nombre valido:"+usuario+":"+servidorEntity.getChatGeneral();
+            System.out.println(usuario);
             byte[] enviados = confirmacion.getBytes();
             DatagramPacket envio = new DatagramPacket(enviados, enviados.length, datagramPacket.getAddress(), datagramPacket.getPort());
             try {

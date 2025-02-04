@@ -10,19 +10,17 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 
 @Data
-public class ChatUsuario extends JFrame{
-    private JTextArea chat;
-    private JTextField textFieldChat;
-    private JButton botonEnviar;
-    private JPanel PanelChat;
-    private String nombreUsuario;
-    private DatagramSocket clientSocket;
+public class ChatUsuario extends JFrame {
+    private JPanel panelChat;
+    private JTextField textFieldMensaje;
+    private JButton btnEnviar;
+    private JTextPane textPane1;
 
-    public ChatUsuario(String nombreUsuario, DatagramSocket clientSocket) {
-        botonEnviar.addActionListener(new ActionListener() {
+    public ChatUsuario(DatagramSocket clientSocket, String nombreUsuario) {
+        btnEnviar.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                String mensaje = textFieldChat.getText();
+                String mensaje = textFieldMensaje.getText();
                 if (mensaje.isEmpty()){
                     JOptionPane.showMessageDialog(null, "No puedes enviar mensajes vacios");
                 }else{
@@ -32,11 +30,9 @@ public class ChatUsuario extends JFrame{
                     } catch (UnknownHostException ex) {
                         throw new RuntimeException(ex);
                     }
-                    textFieldChat.setText("");
+                    textFieldMensaje.setText("");
                 }
             }
         });
     }
-
-
 }

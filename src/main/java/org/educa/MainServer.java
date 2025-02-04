@@ -1,5 +1,7 @@
 package org.educa;
 
+import org.educa.entity.ServidorEntity;
+
 import javax.xml.crypto.Data;
 import java.io.IOException;
 import java.net.DatagramPacket;
@@ -10,8 +12,10 @@ import java.util.ArrayList;
 public class MainServer {
     private static ArrayList<String> usuariosConectados = new ArrayList<String>();
     private static ArrayList<DatagramPacket> direcciones = new ArrayList<DatagramPacket>();
+    private static ServidorEntity servidor;
     public static void main(String[] args) {
         DatagramSocket socket = null;
+
         try {
             socket = new DatagramSocket(12345);
         } catch (
@@ -19,7 +23,7 @@ public class MainServer {
             e1.printStackTrace();
         }
         boolean desconexion = true;
-
+        servidor = new ServidorEntity(socket);
         while (desconexion){
             if (usuariosConectados.isEmpty()){
                 System.out.println("Servidor esperando conexiones");
@@ -31,20 +35,20 @@ public class MainServer {
 
             recibo = new DatagramPacket(buffer, buffer.length);
             try {
-                socket.receive(recibo);
+                servidor.getDatagramSocket().receive(recibo);
             } catch (IOException e) {
                 e.printStackTrace();
             }
             String nombreUsuario = new String(recibo.getData()).trim();
             System.out.println(comprobarNombreUsuario(nombreUsuario, recibo));
-            if(usuariosConectados.size()>=2){
+            if(usuariosConectados.size()>=1){
                 System.out.println("Chat general iniciado");
                 byte[] chatAbierto = new byte[1024];
                 chatAbierto = "Chat general abierto".getBytes();
                 for (int i = 0; i < usuariosConectados.size(); i++) {
                     DatagramPacket envio = new DatagramPacket(chatAbierto, chatAbierto.length, direcciones.get(i).getAddress(), direcciones.get(i).getPort());
                     try {
-                        socket.send(envio);
+                        servidor.getDatagramSocket().send(envio);
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
@@ -54,7 +58,7 @@ public class MainServer {
                     byte[] mensajeRecibido = new byte[1024];
                     DatagramPacket mensaje = new DatagramPacket(mensajeRecibido, mensajeRecibido.length);
                     try {
-                        socket.receive(mensaje);
+                        servidor.getDatagramSocket().receive(mensaje);
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
@@ -64,7 +68,7 @@ public class MainServer {
                         byte[] mensajeReenviar = new byte[1024];
                         DatagramPacket envio = new DatagramPacket(mensajeReenviar, mensajeReenviar.length, direcciones.get(i).getAddress(), direcciones.get(i).getPort());
                         try {
-                            socket.send(envio);
+                            servidor.getDatagramSocket().send(envio);
                         } catch (IOException e) {
                             e.printStackTrace();
                         }
@@ -92,6 +96,7 @@ public class MainServer {
         else{
             usuariosConectados.add(usuario);
             direcciones.add(datagramPacket);
+            servidor.enviarConfirmacionConexion(usuario,datagramPacket);
             return "Usuario conectado";
         }
     }

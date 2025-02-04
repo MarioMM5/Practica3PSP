@@ -26,7 +26,7 @@ public class MainUsuario {
             System.out.print("Escribe tu nombre de usuario:");
             String nombreUsuario = sc.nextLine();
             mandarMensajeAlServidor(nombreUsuario, ipServidor, clientSocket);
-            String confirmacion = recibirMensajeDelServidor(clientSocket);
+            String confirmacion = enviarNombreUsuario(clientSocket);
             System.out.println(confirmacion);
             if(confirmacion.equals("Bienvenido a la aplicación")){
                 System.out.println(menuUsuarioLoggeado());
@@ -52,10 +52,9 @@ public class MainUsuario {
 
     }
 
-    private static String recibirMensajeDelServidor(DatagramSocket clientSocket) {
+    private static String enviarNombreUsuario(DatagramSocket clientSocket) {
         byte[] recibidos = new byte[1024];
         DatagramPacket recibo = new DatagramPacket(recibidos, recibidos.length);
-        System.out.println("esperando datagrama");
         try {
             clientSocket.receive(recibo);
         } catch (IOException e) {

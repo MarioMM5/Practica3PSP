@@ -1,6 +1,5 @@
-package org.educa;
+package org.educa.ConexionUDP;
 
-import com.sun.tools.javac.Main;
 import lombok.Data;
 
 import javax.swing.*;

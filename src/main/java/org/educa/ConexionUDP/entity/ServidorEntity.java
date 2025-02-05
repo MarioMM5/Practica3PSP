@@ -1,4 +1,4 @@
-package org.educa.entity;
+package org.educa.ConexionUDP.entity;
 
 import java.net.DatagramSocket;
 

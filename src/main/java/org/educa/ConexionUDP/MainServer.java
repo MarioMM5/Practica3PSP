@@ -1,8 +1,7 @@
-package org.educa;
+package org.educa.ConexionUDP;
 
-import org.educa.entity.ServidorEntity;
+import org.educa.ConexionUDP.entity.ServidorEntity;
 
-import javax.xml.crypto.Data;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;

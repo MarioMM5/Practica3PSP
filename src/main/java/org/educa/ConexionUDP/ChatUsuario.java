@@ -1,4 +1,4 @@
-package org.educa;
+package org.educa.ConexionUDP;
 
 import lombok.Data;
 

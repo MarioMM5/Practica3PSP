@@ -1,13 +1,11 @@
-package org.educa;
+package org.educa.ConexionUDP;
 
-import org.educa.entity.UsuarioEntity;
+import org.educa.ConexionUDP.entity.UsuarioEntity;
 
 import javax.swing.*;
 import java.io.IOException;
 import java.net.*;
 import java.util.Scanner;
-
-import static java.lang.System.exit;
 
 
 public class MainUsuario {

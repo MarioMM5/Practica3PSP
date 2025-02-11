@@ -1,14 +1,13 @@
-package org.educa.ConexionTCP.datos;
+package org.educa.ConexionUDP.datos;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
-import java.net.Socket;
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
+import java.net.InetAddress;
 
-public class Chat extends JFrame {
+public class ChatUDP extends JFrame {
     private JPanel panelMain;
     private JTextField campoMensaje;
     private JButton btnMensaje;
@@ -16,26 +15,14 @@ public class Chat extends JFrame {
     private JButton btnUsuario;
     private JTextArea areaMensajes;
     private JLabel labelUsuario;
-    private Socket socket;
-    private DataOutputStream out;
-    private DataInputStream in;
+    private DatagramSocket socket;
     private String username;
 
-    public Chat(Socket socket) {
+    public ChatUDP(DatagramSocket socket) {
         this.socket = socket;
 
-        try {
-            // Crear los flujos de entrada y salida
-            out = new DataOutputStream(socket.getOutputStream());
-            in = new DataInputStream(socket.getInputStream());
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        // Crear los componentes
         btnUsuario = new JButton("Iniciar Sesión");
         campoUsuario = new JTextField(20);
-        // Mostrar el campo de usuario
         campoUsuario.setVisible(true);
 
         btnMensaje = new JButton("Enviar Mensaje");
@@ -50,14 +37,12 @@ public class Chat extends JFrame {
         labelUsuario = new JLabel("");
 
         panelMain = new JPanel();
-
-        panelMain.add(labelUsuario);
-        panelMain.add(scrollPane);
         panelMain.add(campoUsuario);
+        panelMain.add(btnUsuario);
+        panelMain.add(labelUsuario);
         panelMain.add(campoMensaje);
         panelMain.add(btnMensaje);
-        panelMain.add(btnUsuario);
-
+        panelMain.add(scrollPane);
 
         btnUsuario.addActionListener(new ActionListener() {
             @Override
@@ -65,21 +50,28 @@ public class Chat extends JFrame {
                 username = campoUsuario.getText().trim();
                 if (!username.isEmpty()) {
                     try {
-                        out.writeUTF("USUARIO:" + username);
-                        String respuesta = in.readUTF();
+                        String message = "USUARIO:" + username;
+                        byte[] sendData = message.getBytes();
+                        InetAddress serverAddress = InetAddress.getByName("localhost");
+                        DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, serverAddress, 6001);
+                        socket.send(sendPacket);
+
+                        byte[] receiveData = new byte[1024];
+                        DatagramPacket receivePacket = new DatagramPacket(receiveData, receiveData.length);
+                        socket.receive(receivePacket);
+                        String respuesta = new String(receivePacket.getData(), 0, receivePacket.getLength());
                         if (respuesta.startsWith("ERROR:")) {
                             JOptionPane.showMessageDialog(btnUsuario, respuesta);
                         } else {
-                            // Cambiar la interfaz para mostrar el chat y ocultar el campo de usuario
                             labelUsuario.setText("Usuario: " + username);
                             campoUsuario.setVisible(false);
                             btnUsuario.setVisible(false);
                             campoMensaje.setVisible(true);
                             btnMensaje.setVisible(true);
                             campoMensaje.requestFocus();
-                            new Thread(new RecibirMensajes()).start();
+                            new Thread(new RecibirMensajes()).start(); // Iniciar el hilo para recibir mensajes
                         }
-                    } catch (IOException ex) {
+                    } catch (Exception ex) {
                         ex.printStackTrace();
                     }
                 } else {
@@ -94,9 +86,12 @@ public class Chat extends JFrame {
                 String mensaje = campoMensaje.getText().trim();
                 if (!mensaje.isEmpty()) {
                     try {
-                        out.writeUTF(mensaje);
+                        byte[] sendData = mensaje.getBytes();
+                        InetAddress serverAddress = InetAddress.getByName("localhost");
+                        DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, serverAddress, 12345);
+                        socket.send(sendPacket);
                         campoMensaje.setText("");
-                    } catch (IOException ex) {
+                    } catch (Exception ex) {
                         ex.printStackTrace();
                     }
                 } else {
@@ -116,11 +111,15 @@ public class Chat extends JFrame {
         @Override
         public void run() {
             try {
+                byte[] receiveData = new byte[1024];
                 while (true) {
-                    areaMensajes.append(in.readUTF() + "\n");
+                    DatagramPacket receivePacket = new DatagramPacket(receiveData, receiveData.length);
+                    socket.receive(receivePacket);
+                    String message = new String(receivePacket.getData(), 0, receivePacket.getLength());
+                    areaMensajes.append(message + "\n");
                 }
-            } catch (IOException e) {
-                System.out.println("Conexión cerrada: " + socket.getInetAddress());
+            } catch (Exception e) {
+                System.out.println("Conexión cerrada: " + e.getMessage());
             }
         }
     }

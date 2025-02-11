@@ -6,7 +6,7 @@ import java.io.IOException;
 import java.net.Socket;
 import java.util.ArrayList;
 
-public class ServerTCP extends Thread {
+public class IntermediarioTCP extends Thread {
     // Lista de salidas de los clientes
     private static final ArrayList<DataOutputStream> clienteOutputs = new ArrayList<>();
     // Lista de nombres de usuario
@@ -21,7 +21,7 @@ public class ServerTCP extends Thread {
      * Constructor de la clase ServerTCP
      * @param socket Socket del server
      */
-    public ServerTCP(Socket socket) {
+    public IntermediarioTCP(Socket socket) {
         this.socket = socket;
         try {
             // Crear los flujos de entrada y salida

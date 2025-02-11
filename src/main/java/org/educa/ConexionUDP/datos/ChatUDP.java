@@ -53,7 +53,7 @@ public class ChatUDP extends JFrame {
                         String message = "USUARIO:" + username;
                         byte[] sendData = message.getBytes();
                         InetAddress serverAddress = InetAddress.getByName("localhost");
-                        DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, serverAddress, 6001);
+                        DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, serverAddress, 12345);
                         socket.send(sendPacket);
 
                         byte[] receiveData = new byte[1024];
